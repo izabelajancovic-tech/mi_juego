@@ -57,7 +57,7 @@ const state = {
     y: 0,
     w: 44,
     h: 44,
-    speed: 260,       // pixeles por segundo
+    speed: 500,       // pixeles por segundo
   },
 };
 
@@ -238,7 +238,7 @@ function checkCollisions() {
   for (let i = state.enemies.length - 1; i >= 0; i--) {
     const enemy = state.enemies[i];
     if (rectsOverlap(p.x, p.y, p.w, p.h, enemy.x, enemy.y, enemy.size, enemy.size)) {
-      state.energy -= 22; // duele chocar con un chisme
+      state.energy -= 55; // duele chocar con un chisme
       state.enemies.splice(i, 1);
     }
   }
@@ -264,7 +264,7 @@ function collectItem(type) {
     state.score += 10;
     state.energy = Math.min(100, state.energy + 6);
   } else if (type === "pincel") {
-    state.score += 15;
+    state.score += 50;
     state.energy = Math.min(100, state.energy + 9);
   } else if (type === "material") {
     state.score += 20;
