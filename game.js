@@ -13,8 +13,14 @@ const ctx = canvas.getContext("2d");
 const chicaImage = new Image();
 chicaImage.src = 'img/personaje.png';
 
-const itemImage = new Image();
-itemImage.src = 'img/item.png';
+const followerImage = new Image();
+followerImage.src = 'img/item.png';
+
+const pincelImage = new Image();
+pincelImage.src = 'img/cuadro-de-arte.png';
+
+const materialImage = new Image();
+materialImage.src = 'img/los-amigos-v1.png';
 
 const enemyImage = new Image();
 enemyImage.src = 'img/enemigo.png';
@@ -326,17 +332,17 @@ function roundRect(x, y, w, h, r) {
 
 // Dibuja un follower usando la imagen
 function drawFollower(item) {
-  ctx.drawImage(itemImage, item.x, item.y, item.size, item.size);
+  ctx.drawImage(followerImage, item.x, item.y, item.size, item.size);
 }
 
 // Dibuja un pincel usando la imagen
 function drawPincel(item) {
-  ctx.drawImage(itemImage, item.x, item.y, item.size, item.size);
+  ctx.drawImage(pincelImage, item.x, item.y, item.size, item.size);
 }
 
 // Dibuja materiales artísticos usando la imagen
 function drawMaterial(item) {
-  ctx.drawImage(itemImage, item.x, item.y, item.size, item.size);
+  ctx.drawImage(materialImage, item.x, item.y, item.size, item.size);
 }
 
 // Dibuja un "chisme" (enemigo) usando su imagen
