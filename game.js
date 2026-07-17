@@ -39,6 +39,46 @@ const sonidoAmigosSound = new Audio('sfx/sonido-amigos.mp3');
 const sonidoPincelesSound = new Audio('sfx/sonido-pinceles.mp3');
 const sonidoDeCuadrosSound = new Audio('sfx/sonido-de-cuadros.mp3');
 
+let audioUnlocked = false;
+
+function unlockAudio() {
+  if (audioUnlocked) return;
+  audioUnlocked = true;
+
+  [disparoSound, golpeChismesSound, sonidoAmigosSound, sonidoPincelesSound, sonidoDeCuadrosSound].forEach((sound) => {
+    if (!sound) return;
+    sound.muted = false;
+    sound.volume = 1;
+    try {
+      sound.load();
+    } catch (error) {
+      // Ignoramos errores de carga en navegadores restrictivos.
+    }
+  });
+}
+
+function playSound(sound) {
+  if (!sound) return;
+
+  unlockAudio();
+
+  try {
+    sound.currentTime = 0;
+    const playPromise = sound.play();
+    if (playPromise && typeof playPromise.catch === "function") {
+      playPromise.catch(() => {
+        try {
+          const fallback = sound.cloneNode(true);
+          fallback.volume = 1;
+          fallback.play().catch(() => {});
+        } catch (error) {}
+      });
+    }
+  } catch (error) {
+    // Se ignora para no interrumpir el juego.
+  }
+}
+
 const scoreValueEl = document.getElementById("scoreValue");
 const levelValueEl = document.getElementById("levelValue");
 const energyFillEl = document.getElementById("energyFill");
@@ -179,8 +219,7 @@ function firePower() {
     speed: 480,
   });
 
-  disparoSound.currentTime = 0;
-  disparoSound.play();
+  playSound(disparoSound);
 
   state.powerCooldown = 0.55; // segundos antes de poder disparar otra vez
 }
@@ -261,8 +300,7 @@ function checkCollisions() {
   for (let i = state.enemies.length - 1; i >= 0; i--) {
     const enemy = state.enemies[i];
     if (rectsOverlap(p.x, p.y, p.w, p.h, enemy.x, enemy.y, enemy.size, enemy.size)) {
-      golpeChismeSound.currentTime = 0;
-      golpeChismeSound.play();
+      playSound(golpeChismesSound);
       state.energy -= 55; // duele chocar con un chisme
       state.enemies.splice(i, 1);
     }
@@ -285,19 +323,16 @@ function checkCollisions() {
 
 // Aplica el efecto de recoger un objeto bueno según su tipo
 function collectItem(type) {
-  if (type === "los-amigos-v1.png") {
-    sonidoAmigosSound.currentTime = 0;
-    sonidoAmigosSound.play();
+  if (type === "follower") {
+    playSound(sonidoAmigosSound);
     state.score += 10;
     state.energy = Math.min(100, state.energy + 6);
-  } else if (type === "item.png") {
-    sonidoPincelesSound.currentTime = 0;
-    sonidoPincelesSound.play();
+  } else if (type === "pincel") {
+    playSound(sonidoPincelesSound);
     state.score += 50;
     state.energy = Math.min(100, state.energy + 9);
-  } else if (type === "cuadro-de-arte.png") {
-    sonidoDeCuadrosSound.currentTime = 0;
-    sonidoDeCuadrosSound.play();
+  } else if (type === "material") {
+    playSound(sonidoDeCuadrosSound);
     state.score += 20;
     state.energy = Math.min(100, state.energy + 12);
   }
@@ -430,6 +465,7 @@ function gameLoop(timestamp) {
 
 // --- Teclado ---
 window.addEventListener("keydown", (e) => {
+  unlockAudio();
   if (e.key === "ArrowLeft") input.left = true;
   if (e.key === "ArrowRight") input.right = true;
   if (e.key === " ") {
@@ -460,6 +496,7 @@ holdButton(btnRight, () => (input.right = true), () => (input.right = false));
 
 btnPower.addEventListener("pointerdown", (e) => {
   e.preventDefault();
+  unlockAudio();
   firePower();
 });
 
@@ -476,6 +513,7 @@ resumeBtn.addEventListener("click", () => {
 
 // --- Botón de inicio: empieza una partida nueva ---
 startBtn.addEventListener("click", () => {
+  unlockAudio();
   startOverlay.classList.add("hidden");
   resetGame();
   state.running = true;
@@ -483,6 +521,7 @@ startBtn.addEventListener("click", () => {
 
 // --- Botón de reintentar: vuelve a jugar tras perder ---
 retryBtn.addEventListener("click", () => {
+  unlockAudio();
   gameOverOverlay.classList.add("hidden");
   resetGame();
   state.running = true;
