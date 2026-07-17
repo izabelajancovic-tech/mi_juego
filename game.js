@@ -324,7 +324,7 @@ function checkCollisions() {
 // Aplica el efecto de recoger un objeto bueno según su tipo
 function collectItem(type) {
   if (type === "follower") {
-    playSound(sonidoAmigosSound);
+    playSound(sonidoDeCuadrosSound);
     state.score += 10;
     state.energy = Math.min(100, state.energy + 6);
   } else if (type === "pincel") {
@@ -332,7 +332,7 @@ function collectItem(type) {
     state.score += 50;
     state.energy = Math.min(100, state.energy + 9);
   } else if (type === "material") {
-    playSound(sonidoDeCuadrosSound);
+    playSound(sonidoAmigosSound);
     state.score += 20;
     state.energy = Math.min(100, state.energy + 12);
   }
