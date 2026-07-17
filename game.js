@@ -25,6 +25,20 @@ materialImage.src = 'img/los-amigos-v1.png';
 const enemyImage = new Image();
 enemyImage.src = 'img/enemigo.png';
 
+const fondoAcademiaImage = new Image();
+let fondoAcademiaReady = false;
+fondoAcademiaImage.onload = () => {
+  fondoAcademiaReady = true;
+};
+fondoAcademiaImage.src = 'img/fondo-academia.png';
+
+// --- Carga de sonidos ---
+const disparoSound = new Audio('sfx/disparo.mp3');
+const golpeChismesSound = new Audio('sfx/golpe-chismes.mp3');
+const sonidoAmigosSound = new Audio('sfx/sonido-amigos.mp3');
+const sonidoPincelesSound = new Audio('sfx/sonido-pinceles.mp3');
+const sonidoDeCuadrosSound = new Audio('sfx/sonido-de-cuadros.mp3');
+
 const scoreValueEl = document.getElementById("scoreValue");
 const levelValueEl = document.getElementById("levelValue");
 const energyFillEl = document.getElementById("energyFill");
@@ -165,6 +179,9 @@ function firePower() {
     speed: 480,
   });
 
+  disparoSound.currentTime = 0;
+  disparoSound.play();
+
   state.powerCooldown = 0.55; // segundos antes de poder disparar otra vez
 }
 
@@ -244,6 +261,8 @@ function checkCollisions() {
   for (let i = state.enemies.length - 1; i >= 0; i--) {
     const enemy = state.enemies[i];
     if (rectsOverlap(p.x, p.y, p.w, p.h, enemy.x, enemy.y, enemy.size, enemy.size)) {
+      golpeChismeSound.currentTime = 0;
+      golpeChismeSound.play();
       state.energy -= 55; // duele chocar con un chisme
       state.enemies.splice(i, 1);
     }
@@ -266,13 +285,19 @@ function checkCollisions() {
 
 // Aplica el efecto de recoger un objeto bueno según su tipo
 function collectItem(type) {
-  if (type === "follower") {
+  if (type === "los-amigos-v1.png") {
+    sonidoAmigosSound.currentTime = 0;
+    sonidoAmigosSound.play();
     state.score += 10;
     state.energy = Math.min(100, state.energy + 6);
-  } else if (type === "pincel") {
+  } else if (type === "item.png") {
+    sonidoPincelesSound.currentTime = 0;
+    sonidoPincelesSound.play();
     state.score += 50;
     state.energy = Math.min(100, state.energy + 9);
-  } else if (type === "material") {
+  } else if (type === "cuadro-de-arte.png") {
+    sonidoDeCuadrosSound.currentTime = 0;
+    sonidoDeCuadrosSound.play();
     state.score += 20;
     state.energy = Math.min(100, state.energy + 12);
   }
@@ -294,6 +319,11 @@ function endGame() {
 // Limpia el fondo del canvas en cada frame
 function drawBackground() {
   ctx.clearRect(0, 0, state.width, state.height);
+
+  if (fondoAcademiaReady && fondoAcademiaImage.complete && fondoAcademiaImage.naturalWidth > 0) {
+    ctx.drawImage(fondoAcademiaImage, 0, 0, state.width, state.height);
+    return;
+  }
 
   // Un degradado suave para simular el estudio de arte
   const grad = ctx.createLinearGradient(0, 0, 0, state.height);
