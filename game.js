@@ -38,6 +38,9 @@ const golpeChismesSound = new Audio('sfx/golpe-chismes.mp3');
 const sonidoAmigosSound = new Audio('sfx/sonido-amigos.mp3');
 const sonidoPincelesSound = new Audio('sfx/sonido-pinceles.mp3');
 const sonidoDeCuadrosSound = new Audio('sfx/sonido-de-cuadros.mp3');
+const fondoMusical = new Audio('sfx/musica-de-fondo.mp3');
+fondoMusical.loop = true;
+fondoMusical.volume = 0.45;
 
 let audioUnlocked = false;
 
@@ -45,10 +48,16 @@ function unlockAudio() {
   if (audioUnlocked) return;
   audioUnlocked = true;
 
-  [disparoSound, golpeChismesSound, sonidoAmigosSound, sonidoPincelesSound, sonidoDeCuadrosSound].forEach((sound) => {
+  [disparoSound, golpeChismesSound, sonidoAmigosSound, sonidoPincelesSound, sonidoDeCuadrosSound, fondoMusical].forEach((sound) => {
     if (!sound) return;
     sound.muted = false;
-    sound.volume = 1;
+    if (sound === fondoMusical) {
+      sound.volume = 0.45;
+    } else if (sound === sonidoAmigosSound || sound === sonidoPincelesSound || sound === sonidoDeCuadrosSound) {
+      sound.volume = 0.55;
+    } else {
+      sound.volume = 1;
+    }
     try {
       sound.load();
     } catch (error) {
@@ -511,9 +520,18 @@ resumeBtn.addEventListener("click", () => {
   pauseOverlay.classList.add("hidden");
 });
 
+function playBackgroundMusic() {
+  if (!audioUnlocked) unlockAudio();
+  if (fondoMusical.paused) {
+    fondoMusical.currentTime = 0;
+    fondoMusical.play().catch(() => {});
+  }
+}
+
 // --- Botón de inicio: empieza una partida nueva ---
 startBtn.addEventListener("click", () => {
   unlockAudio();
+  playBackgroundMusic();
   startOverlay.classList.add("hidden");
   resetGame();
   state.running = true;
@@ -522,6 +540,7 @@ startBtn.addEventListener("click", () => {
 // --- Botón de reintentar: vuelve a jugar tras perder ---
 retryBtn.addEventListener("click", () => {
   unlockAudio();
+  playBackgroundMusic();
   gameOverOverlay.classList.add("hidden");
   resetGame();
   state.running = true;
