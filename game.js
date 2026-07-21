@@ -124,8 +124,8 @@ const state = {
   player: {
     x: 0,
     y: 0,
-    w: 44,
-    h: 44,
+    w: 130,
+    h: 100,
     speed: 500,       // pixeles por segundo
   },
 };
@@ -188,18 +188,20 @@ function updateHUD() {
    --------------------------------------------------------- */
 function spawnFallingThing() {
   const roll = Math.random();
-  const size = 30;
+  const size = 40;
   const x = Math.random() * (state.width - size);
-  const baseSpeed = 90 + state.level * 14;
+  const scoreTier = Math.floor(state.score / 80);
+  const baseSpeed = 70 + state.level * 8;
+  const speedMultiplier = 1 + scoreTier * 0.04;
 
-  // Probabilidad de que aparezca un "chisme" (enemigo) sube con el nivel
-  const enemyChance = Math.min(0.4, 0.2 + state.level * 0.02);
+  // Probabilidad de que aparezca un "chisme" (enemigo) sube con el nivel y con el score
+  const enemyChance = Math.min(0.7, 0.2 + state.level * 0.015 + scoreTier * 0.03);
 
   if (roll < enemyChance) {
     state.enemies.push({
       type: "chisme",
       x, y: -size, size,
-      speed: baseSpeed * 1.1,
+      speed: baseSpeed * speedMultiplier,
     });
     return;
   }
@@ -248,7 +250,8 @@ function update(dt) {
 
   // --- crear objetos nuevos cada cierto tiempo ---
   state.spawnTimer += dt;
-  const spawnInterval = Math.max(0.45, 1.1 - state.level * 0.05);
+  const scoreTier = Math.floor(state.score / 80);
+  const spawnInterval = Math.max(0.35, 0.95 - state.level * 0.04 - scoreTier * 0.02);
   if (state.spawnTimer >= spawnInterval) {
     state.spawnTimer = 0;
     spawnFallingThing();
