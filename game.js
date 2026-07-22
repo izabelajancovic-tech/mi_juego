@@ -11,7 +11,7 @@ const ctx = canvas.getContext("2d");
 
 // --- Carga de imágenes ---
 const chicaImage = new Image();
-chicaImage.src = 'img/personaje.png';
+chicaImage.src = 'img/personaje_1x1.webp';
 
 const followerImage = new Image();
 followerImage.src = 'img/item.png';
