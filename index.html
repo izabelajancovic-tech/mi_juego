@@ -31,6 +31,11 @@
       </div>
     </header>
 
+    <div class="audio-controls">
+      <button class="icon-btn" id="muteBtn" type="button" aria-label="Activar o desactivar sonido">🔊</button>
+      <input class="volume-slider" id="volumeSlider" type="range" min="0" max="1" step="0.05" value="0.7" aria-label="Volumen del juego" />
+    </div>
+
     <!-- Aquí se dibuja TODO el juego con JavaScript -->
     <div class="canvas-frame">
       <canvas id="gameCanvas" aria-label="Área de juego: Academia de Dibujo"></canvas>

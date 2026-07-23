@@ -11,10 +11,10 @@ const ctx = canvas.getContext("2d");
 
 // --- Carga de imágenes ---
 const chicaImage = new Image();
-chicaImage.src = 'img/personaje.png';
+chicaImage.src = 'img/personaje_1x1.webp';
 
 const followerImage = new Image();
-followerImage.src = 'img/item.png';
+followerImage.src = 'img/item_1x1.webp';
 
 const pincelImage = new Image();
 pincelImage.src = 'img/cuadro-de-arte.png';
@@ -23,7 +23,7 @@ const materialImage = new Image();
 materialImage.src = 'img/los-amigos-v1.png';
 
 const enemyImage = new Image();
-enemyImage.src = 'img/enemigo.png';
+enemyImage.src = 'img/enemigo_1x1.webp';
 
 const fondoAcademiaImage = new Image();
 let fondoAcademiaReady = false;
@@ -31,6 +31,19 @@ fondoAcademiaImage.onload = () => {
   fondoAcademiaReady = true;
 };
 fondoAcademiaImage.src = 'img/fondo-academia.png';
+
+function imageReady(image) {
+  return image.complete && image.naturalWidth > 0;
+}
+
+function drawSprite(image, x, y, w, h, fallbackColor) {
+  if (imageReady(image)) {
+    ctx.drawImage(image, x, y, w, h);
+    return;
+  }
+  ctx.fillStyle = fallbackColor || "#ffffff33";
+  ctx.fillRect(x, y, w, h);
+}
 
 // --- Carga de sonidos ---
 const disparoSound = new Audio('sfx/disparo.mp3');
@@ -43,21 +56,42 @@ fondoMusical.loop = true;
 fondoMusical.volume = 0.45;
 
 let audioUnlocked = false;
+let audioMuted = false;
+let audioVolume = 0.7;
+
+const allGameAudio = [
+  disparoSound,
+  golpeChismesSound,
+  sonidoAmigosSound,
+  sonidoPincelesSound,
+  sonidoDeCuadrosSound,
+  fondoMusical,
+];
+
+function getAudioBaseVolume(sound) {
+  if (sound === fondoMusical) return 0.45;
+  if (sound === sonidoAmigosSound || sound === sonidoPincelesSound || sound === sonidoDeCuadrosSound) return 0.55;
+  return 1;
+}
+
+function applyAudioSettings() {
+  allGameAudio.forEach((sound) => {
+    if (!sound) return;
+    sound.muted = audioMuted;
+    sound.volume = getAudioBaseVolume(sound) * audioVolume;
+  });
+}
 
 function unlockAudio() {
-  if (audioUnlocked) return;
+  if (audioUnlocked) {
+    applyAudioSettings();
+    return;
+  }
   audioUnlocked = true;
+  applyAudioSettings();
 
-  [disparoSound, golpeChismesSound, sonidoAmigosSound, sonidoPincelesSound, sonidoDeCuadrosSound, fondoMusical].forEach((sound) => {
+  allGameAudio.forEach((sound) => {
     if (!sound) return;
-    sound.muted = false;
-    if (sound === fondoMusical) {
-      sound.volume = 0.45;
-    } else if (sound === sonidoAmigosSound || sound === sonidoPincelesSound || sound === sonidoDeCuadrosSound) {
-      sound.volume = 0.55;
-    } else {
-      sound.volume = 1;
-    }
     try {
       sound.load();
     } catch (error) {
@@ -105,6 +139,32 @@ const btnLeft = document.getElementById("btnLeft");
 const btnRight = document.getElementById("btnRight");
 const btnPower = document.getElementById("btnPower");
 const btnPause = document.getElementById("btnPause");
+const muteBtn = document.getElementById("muteBtn");
+const volumeSlider = document.getElementById("volumeSlider");
+
+function updateAudioControls() {
+  muteBtn.textContent = audioMuted ? "🔇" : "🔊";
+  volumeSlider.value = audioVolume.toFixed(2);
+}
+
+muteBtn.addEventListener("click", () => {
+  audioMuted = !audioMuted;
+  updateAudioControls();
+  applyAudioSettings();
+});
+
+volumeSlider.addEventListener("input", (event) => {
+  audioVolume = Number(event.target.value);
+  if (audioVolume <= 0) {
+    audioMuted = true;
+  } else {
+    audioMuted = false;
+  }
+  updateAudioControls();
+  applyAudioSettings();
+});
+
+updateAudioControls();
 
 // --- 2. "state" guarda TODO lo que cambia mientras se juega ---
 // Tenerlo junto en un objeto facilita reiniciar el juego.
@@ -124,9 +184,10 @@ const state = {
   player: {
     x: 0,
     y: 0,
-    w: 130,
+    w: 70,
     h: 100,
     speed: 500,       // pixeles por segundo
+    hitTimer: 0,
   },
 };
 
@@ -247,6 +308,7 @@ function update(dt) {
 
   // --- bajar el enfriamiento del poder especial ---
   if (state.powerCooldown > 0) state.powerCooldown -= dt;
+  if (state.player.hitTimer > 0) state.player.hitTimer = Math.max(0, state.player.hitTimer - dt);
 
   // --- crear objetos nuevos cada cierto tiempo ---
   state.spawnTimer += dt;
@@ -311,10 +373,13 @@ function checkCollisions() {
   // --- jugadora contra chismes (enemigos) ---
   for (let i = state.enemies.length - 1; i >= 0; i--) {
     const enemy = state.enemies[i];
+    if (state.player.hitTimer > 0) continue;
     if (rectsOverlap(p.x, p.y, p.w, p.h, enemy.x, enemy.y, enemy.size, enemy.size)) {
       playSound(golpeChismesSound);
-      state.energy -= 55; // duele chocar con un chisme
+      state.energy = Math.max(0, state.energy - 55); // duele chocar con un chisme
+      state.player.hitTimer = 0.4; // breve invulnerabilidad tras el impacto
       state.enemies.splice(i, 1);
+      break;
     }
   }
 
@@ -393,7 +458,7 @@ function drawBackground() {
 // Dibuja a la jugadora usando su imagen
 function drawPlayer() {
   const p = state.player;
-  ctx.drawImage(chicaImage, p.x, p.y, p.w, p.h);
+  drawSprite(chicaImage, p.x, p.y, p.w, p.h, "#ffb0e6");
 }
 
 // Ayuda a dibujar rectángulos con esquinas redondeadas
@@ -409,22 +474,22 @@ function roundRect(x, y, w, h, r) {
 
 // Dibuja un follower usando la imagen
 function drawFollower(item) {
-  ctx.drawImage(followerImage, item.x, item.y, item.size, item.size);
+  drawSprite(followerImage, item.x, item.y, item.size, item.size, "#6be3b0");
 }
 
 // Dibuja un pincel usando la imagen
 function drawPincel(item) {
-  ctx.drawImage(pincelImage, item.x, item.y, item.size, item.size);
+  drawSprite(pincelImage, item.x, item.y, item.size, item.size, "#ffcf5c");
 }
 
 // Dibuja materiales artísticos usando la imagen
 function drawMaterial(item) {
-  ctx.drawImage(materialImage, item.x, item.y, item.size, item.size);
+  drawSprite(materialImage, item.x, item.y, item.size, item.size, "#b98bff");
 }
 
 // Dibuja un "chisme" (enemigo) usando su imagen
 function drawChisme(enemy) {
-  ctx.drawImage(enemyImage, enemy.x, enemy.y, enemy.size, enemy.size);
+  drawSprite(enemyImage, enemy.x, enemy.y, enemy.size, enemy.size, "#ff5c73");
 }
 
 // Dibuja los disparos del poder especial (rayitos de inspiración)

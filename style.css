@@ -65,6 +65,36 @@ body {
   padding: 0.6rem 0.9rem;
 }
 
+.audio-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  padding: 0 0.9rem;
+}
+
+.icon-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid var(--surface-border);
+  background: var(--surface);
+  color: var(--text-main);
+  font-size: 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.volume-slider {
+  flex: 1;
+  min-width: 10rem;
+  height: 6px;
+  background: transparent;
+  accent-color: var(--accent);
+}
+
 .hud-item {
   display: flex;
   flex-direction: column;
