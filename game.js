@@ -10,25 +10,32 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
 // --- Carga de imágenes ---
-const chicaImage = new Image();
-chicaImage.src = 'img/personaje_1x1.webp';
+function createGameImage(primarySrc, fallbackSrc) {
+  const image = new Image();
+  if (fallbackSrc) {
+    image.onerror = () => {
+      if (image.src !== fallbackSrc) {
+        image.src = fallbackSrc;
+      }
+    };
+  }
+  image.src = primarySrc;
+  return image;
+}
 
-const followerImage = new Image();
-followerImage.src = 'img/item_1x1.webp';
-
-const pincelImage = new Image();
-pincelImage.src = 'img/cuadro-de-arte.png';
-
-const materialImage = new Image();
-materialImage.src = 'img/los-amigos-v1.png';
-
-const enemyImage = new Image();
-enemyImage.src = 'img/enemigo_1x1.webp';
+const chicaImage = createGameImage('img/personaje_1x1.webp', 'img/personaje.png');
+const followerImage = createGameImage('img/item_1x1.webp', 'img/item.png');
+const pincelImage = createGameImage('img/cuadro-de-arte.png');
+const materialImage = createGameImage('img/los-amigos-v1.png', 'img/los-amigos.png');
+const enemyImage = createGameImage('img/enemigo_1x1.webp', 'img/enemigo.png');
 
 const fondoAcademiaImage = new Image();
 let fondoAcademiaReady = false;
 fondoAcademiaImage.onload = () => {
   fondoAcademiaReady = true;
+};
+fondoAcademiaImage.onerror = () => {
+  fondoAcademiaImage.src = 'img/fondo-academia-old.png';
 };
 fondoAcademiaImage.src = 'img/fondo-academia.png';
 
